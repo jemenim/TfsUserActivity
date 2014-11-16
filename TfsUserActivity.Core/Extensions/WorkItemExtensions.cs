@@ -1,14 +1,15 @@
 ﻿using System;
 using Microsoft.TeamFoundation.WorkItemTracking.Client;
+using TfsUserActivity.Core.Messaging;
 
 namespace TfsUserActivity.Core.Extensions
 {
     public static class WorkItemExtensions
     {
-        public static WorkItemRevision ToWorkItemRevision(this FieldCollection @fieldCollection)
+        public static WorkItemRevision ToWorkItemRevision(this Revision revision)
         {
-            var workItemRevision = new WorkItemRevision();
-            foreach (Field field in fieldCollection)
+            var workItemRevision = new WorkItemRevision{WorkItem = revision.WorkItem};
+            foreach (Field field in revision.Fields)
             {
                 if (field.Name.Equals("Changed By"))
                 {

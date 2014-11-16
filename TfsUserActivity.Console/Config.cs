@@ -13,18 +13,33 @@ namespace TfsUserActivity.Console
             }
         }
 
-        public static string UserName
+        public static string TfsUserName
         {
             get
             {
-                return ConfigurationManager.AppSettings["UserName"];
+                return ConfigurationManager.AppSettings["TfsUserName"];
             }
         }
-        public static string Password
+        public static string TfsPassword
         {
             get
             {
-                return ConfigurationManager.AppSettings["Password"];
+                return ConfigurationManager.AppSettings["TfsPassword"];
+            }
+        }
+
+        public static string OneBoardUserName
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["OneBoardUserName"];
+            }
+        }
+        public static string OneBoardPassword
+        {
+            get
+            {
+                return ConfigurationManager.AppSettings["OneBoardPassword"];
             }
         }
     }
