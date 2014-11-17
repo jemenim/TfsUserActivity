@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using Microsoft.TeamFoundation.Client;
 using Microsoft.TeamFoundation.WorkItemTracking.Client;
 using TfsUserActivity.Core.Extensions;
+using TfsUserActivity.Core.Messaging;
 
 namespace TfsUserActivity.Core
 {
@@ -17,14 +19,14 @@ namespace TfsUserActivity.Core
             _teamProjectCollection.EnsureAuthenticated();
         }
 
-        public void Print(DateTime startDate, DateTime endDate)
+        public WorkItemRevision[] GetRevisions(DateTime startDate, DateTime endDate)
         {
+            IList<WorkItemRevision> result = new List<WorkItemRevision>();
             var workItemStore = _teamProjectCollection.GetService<WorkItemStore>();
             
             WorkItemCollection workItemCollection = workItemStore.Query(
                 string.Format("SELECT * FROM WorkItems WHERE [System.TeamProject] = 'FKS' AND ever ([Changed By] = @Me) AND [Changed Date] >= '{0}'", startDate.Date));
 
-            var workItems = new List<WorkItem>();
             foreach (WorkItem item in workItemCollection)
             {
                 var revisionCollection = item.Revisions;
@@ -33,7 +35,7 @@ namespace TfsUserActivity.Core
                 foreach (Revision revision in revisionCollection)
                 {
 
-                    var workItemRevision = revision.Fields.ToWorkItemRevision();
+                    var workItemRevision = revision.ToWorkItemRevision();
                     if (workItemRevision.ChangeDate >= startDate.Date && workItemRevision.ChangeDate <= endDate.Date &&
                         workItemRevision.ChangeBy.Equals(workItemStore.UserDisplayName))
                     {
@@ -42,19 +44,18 @@ namespace TfsUserActivity.Core
                 }
                 if (isInclude)
                 {
-                    Console.WriteLine("{0} {1} - {2}", item.Type.Name, item.Id, item.Title);
                     foreach (Revision revision in item.Revisions)
                     {
-                        var workItemRevision = revision.Fields.ToWorkItemRevision();
+                        var workItemRevision = revision.ToWorkItemRevision();
                         if (workItemRevision.ChangeDate >= startDate.Date &&
                             workItemRevision.ChangeBy.Equals(workItemStore.UserDisplayName))
                         {
-                            Console.WriteLine("{0}{1}{2}", workItemRevision.ChangeDate, Environment.NewLine, string.IsNullOrEmpty(workItemRevision.History) ? workItemRevision.State : workItemRevision.History);
+                            result.Add(workItemRevision);
                         }
                     }
-                    Console.WriteLine();
                 }
             }
+            return result.ToArray();
         }
 
         public void Dispose()
